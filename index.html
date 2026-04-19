@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bu Converter</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f0e8;
+      color: #2c2c2c;
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-bottom: 16px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: #5c4a2a;
+    }
+
+    button {
+      background: #5c4a2a;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:active {
+      opacity: 0.8;
+    }
+
+    .result {
+      background: #f5f0e8;
+      border-radius: 10px;
+      padding: 16px;
+      display: none;
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    .result-main {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .result-error {
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .fraction-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    select {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      background: white;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Bu Converter</h1>
+  <p class="subtitle">Japanese bu ↔ Imperial inches</p>
+
+  <!-- CARD 1: Bu to Inches -->
+  <div class="card">
+    <h2>Bu → Inches</h2>
+    <div class="input-row">
+      <input type="number" id="buInput" placeholder="Enter bu" min="0" step="any" />
+      <button onclick="convertBuToInches()">Convert</button>
+    </div>
+    <div class="result" id="buResult">
+      <div class="result-main" id="buResultMain"></div>
+      <div class="result-error" id="buResultError"></div>
+    </div>
+  </div>
+
+  <!-- CARD 2: Inches to Bu -->
+  <div class="card">
+    <h2>Inches → Bu</h2>
+    <div class="input-row fraction-row">
+      <input type="number" id="inchWhole" placeholder="Whole inches" min="0" step="1" />
+      <span>and</span>
+      <select id="inchFraction">
+        <option value="0">0/32"</option>
+        <option value="1">1/32"</option>
+        <option value="2">2/32" (1/16)</option>
+        <option value="3">3/32"</option>
+        <option value="4">4/32" (1/8)</option>
+        <option value="5">5/32"</option>
+        <option value="6">6/32" (3/16)</option>
+        <option value="7">7/32"</option>
+        <option value="8">8/32" (1/4)</option>
+        <option value="9">9/32"</option>
+        <option value="10">10/32" (5/16)</option>
+        <option value="11">11/32"</option>
+        <option value="12">12/32" (3/8)</option>
+        <option value="13">13/32"</option>
+        <option value="14">14/32" (7/16)</option>
+        <option value="15">15/32"</option>
+        <option value="16">16/32" (1/2)</option>
+        <option value="17">17/32"</option>
+        <option value="18">18/32" (9/16)</option>
+        <option value="19">19/32"</option>
+        <option value="20">20/32" (5/8)</option>
+        <option value="21">21/32"</option>
+        <option value="22">22/32" (11/16)</option>
+        <option value="23">23/32"</option>
+        <option value="24">24/32" (3/4)</option>
+        <option value="25">25/32"</option>
+        <option value="26">26/32" (13/16)</option>
+        <option value="27">27/32"</option>
+        <option value="28">28/32" (7/8)</option>
+        <option value="29">29/32"</option>
+        <option value="30">30/32" (15/16)</option>
+        <option value="31">31/32"</option>
+      </select>
+      <button onclick="convertInchesToBu()">Convert</button>
+    </div>
+    <div class="result" id="inchResult">
+      <div class="result-main" id="inchResultMain"></div>
+      <div class="result-error" id="inchResultError"></div>
+    </div>
+  </div>
+
+  <script>
+    const BU_PER_INCH = 1 / 0.11930;  // 1 bu = 0.1193 inches
+
+    function convertBuToInches() {
+      const bu = parseFloat(document.getElementById('buInput').value);
+      if (isNaN(bu) || bu < 0) return;
+
+      const exactInches = bu * 0.11930;
+      const nearest32 = Math.round(exactInches * 32) / 32;
+      const errorInches = Math.abs(exactInches - nearest32);
+      const errorBu = errorInches * BU_PER_INCH;
+
+      const whole = Math.floor(nearest32);
+      const remainder = Math.round((nearest32 - whole) * 32);
+
+      let fractionStr = '';
+      if (remainder === 0) {
+        fractionStr = whole > 0 ? `${whole}"` : '0"';
+      } else if (whole > 0) {
+        fractionStr = `${whole} and ${remainder}/32"`;
+      } else {
+        fractionStr = `${remainder}/32"`;
+      }
+
+      document.getElementById('buResultMain').textContent = fractionStr;
+      document.getElementById('buResultError').textContent =
+        `Margin of error: ${errorInches.toFixed(4)}" (${errorBu.toFixed(2)} bu)`;
+      document.getElementById('buResult').classList.add('visible');
+    }
+
+    function convertInchesToBu() {
+      const whole = parseFloat(document.getElementById('inchWhole').value) || 0;
+      const fraction = parseInt(document.getElementById('inchFraction').value);
+
+      const totalInches = whole + (fraction / 32);
+      if (totalInches <= 0) return;
+
+      const exactBu = totalInches * BU_PER_INCH;
+      const roundedBu = Math.round(exactBu * 10) / 10;
+      const errorBu = Math.abs(exactBu - roundedBu);
+      const errorInches = errorBu * 0.11930;
+
+      document.getElementById('inchResultMain').textContent = `${exactBu.toFixed(2)} bu`;
+      document.getElementById('inchResultError').textContent =
+        `Margin of error: ${errorBu.toFixed(4)} bu (${errorInches.toFixed(4)}")`;
+      document.getElementById('inchResult').classList.add('visible');
+    }
+  </script>
+
+</body>
+</html>
