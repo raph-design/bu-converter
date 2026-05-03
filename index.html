@@ -210,11 +210,12 @@
   <p class="subtitle">Japanese bu ↔ Imperial inches</p>
 
   <div class="toggle">
-    <button class="active" onclick="showView('calculator', this)">Calculator</button>
+    <button class="active" onclick="showView('calculator', this)">Calculator - Fractional Inches</button>
+    <button onclick="showView('decimal', this)">Calculator - Decimal Inches</button>
     <button onclick="showView('table', this)">Table</button>
   </div>
 
-  <!-- CALCULATOR VIEW -->
+  <!-- CALCULATOR VIEW (FRACTIONAL) -->
   <div class="view visible" id="view-calculator">
 
     <div class="card">
@@ -257,6 +258,33 @@
       <div class="result" id="inchResult">
         <div class="result-main" id="inchResultMain"></div>
         <div class="result-error" id="inchResultError"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CALCULATOR VIEW (DECIMAL) -->
+  <div class="view" id="view-decimal">
+
+    <div class="card">
+      <h2>Bu → Inches</h2>
+      <div class="input-row">
+        <input type="number" id="buInputDec" placeholder="Enter bu" min="0" step="any" />
+        <button onclick="convertBuToInchesDecimal()">Convert</button>
+      </div>
+      <div class="result" id="buResultDec">
+        <div class="result-main" id="buResultMainDec"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Inches → Bu</h2>
+      <div class="input-row">
+        <input type="number" id="inchInputDec" placeholder="Enter inches" min="0" step="any" />
+        <button onclick="convertInchesToBuDecimal()">Convert</button>
+      </div>
+      <div class="result" id="inchResultDec">
+        <div class="result-main" id="inchResultMainDec"></div>
       </div>
     </div>
 
@@ -356,6 +384,24 @@
       document.getElementById('inchResultError').textContent =
         `Margin of error: ${errorBu.toFixed(4)} bu (${errorInches.toFixed(4)}")`;
       document.getElementById('inchResult').classList.add('visible');
+    }
+
+    function convertBuToInchesDecimal() {
+      const bu = parseFloat(document.getElementById('buInputDec').value);
+      if (isNaN(bu) || bu < 0) return;
+
+      const exactInches = bu * BU_IN_INCHES;
+      document.getElementById('buResultMainDec').textContent = `${exactInches.toFixed(3)}"`;
+      document.getElementById('buResultDec').classList.add('visible');
+    }
+
+    function convertInchesToBuDecimal() {
+      const inches = parseFloat(document.getElementById('inchInputDec').value);
+      if (isNaN(inches) || inches <= 0) return;
+
+      const exactBu = inches * BU_PER_INCH;
+      document.getElementById('inchResultMainDec').textContent = `${exactBu.toFixed(3)} bu`;
+      document.getElementById('inchResultDec').classList.add('visible');
     }
 
     function buildTable() {
