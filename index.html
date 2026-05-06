@@ -1,451 +1,977 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bu Converter</title>
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="icon" type="image/png" href="apple-touch-icon.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Bu Converter" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bu Converter — 分換算</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4ede0;        /* washi */
+    --paper-2: #ebe2d1;      /* deeper washi */
+    --rule: #2a2520;         /* hairline */
+    --ink: #1a1714;          /* sumi */
+    --ink-2: #4a423a;        /* dim sumi */
+    --ink-3: #8a8073;        /* faint */
+    --indigo: #2d3a4a;       /* aizome */
+    --vermillion: #b8412e;   /* shu — used sparingly */
+    --hilite: #ffffff;
+    --serif: "Cormorant Garamond", "Noto Serif JP", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    --sans: "Inter", system-ui, -apple-system, sans-serif;
+    --jp: "Noto Serif JP", serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(rgba(42,37,32,0.025) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f5f0e8;
-      color: #2c2c2c;
-      min-height: 100vh;
-      padding: 40px 24px;
-    }
+  .wrap {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 28px 22px 80px;
+  }
 
-    h1 {
-      font-size: 1.6rem;
-      margin-bottom: 4px;
-      text-align:center;
-    }
+  /* ---------- Header ---------- */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .title-block { display: flex; flex-direction: column; gap: 4px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  h1 .jp {
+    font-family: var(--jp);
+    font-weight: 500;
+    color: var(--ink-2);
+    margin-left: 8px;
+    font-size: 22px;
+    vertical-align: 2px;
+  }
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-top: 6px;
+  }
+  .stamp {
+    flex: 0 0 auto;
+    width: 38px; height: 38px;
+    background: var(--vermillion);
+    color: #fff7ec;
+    font-family: var(--jp);
+    font-weight: 600;
+    font-size: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(184,65,46,0.4) inset, 1px 1px 0 rgba(0,0,0,0.04);
+    transform: rotate(-3deg);
+    user-select: none;
+  }
 
-    .subtitle {
-      font-size: 0.9rem;
-      color: #888;
-      margin-bottom: 24px;
-      text-align: center;
-    }
+  /* ---------- Mode segmented control ---------- */
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 22px;
+  }
+  .mode {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 12px 6px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background .12s ease, color .12s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-height: 56px;
+    justify-content: center;
+  }
+  .mode .jp {
+    font-family: var(--jp);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--ink-3);
+    text-transform: none;
+  }
+  .mode:hover { background: var(--paper-2); }
+  .mode.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .mode.active .jp { color: rgba(244,237,224,0.55); }
 
-    /* Toggle */
-    .toggle {
-      display: flex;
-      background: #e8e0d0;
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 28px;
-      width: 100%;
-    }
+  /* ---------- Section ---------- */
+  section.panel {
+    margin-top: 28px;
+  }
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .panel-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .panel-label .arrow { color: var(--ink-3); margin: 0 8px; }
+  .panel-meta {
+    font-family: var(--jp);
+    font-size: 13px;
+    color: var(--ink-3);
+  }
 
-    .toggle button {
-      flex: 1;
-      background: transparent;
-      color: #888;
-      border: none;
-      border-radius: 9px;
-      padding: 10px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
+  /* ---------- Input rows ---------- */
+  .row {
+    display: flex;
+    gap: 0;
+    margin-top: 16px;
+    align-items: stretch;
+    border: 1px solid var(--rule);
+    background: var(--hilite);
+  }
+  .row input, .row select {
+    flex: 1 1 auto;
+    min-width: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--rule);
+    padding: 18px 16px;
+    font-family: var(--serif);
+    font-size: 26px;
+    color: var(--ink);
+    outline: none;
+    border-radius: 0;
+  }
+  .row input::placeholder { color: var(--ink-3); font-style: italic; }
+  .row select {
+    font-family: var(--sans);
+    font-size: 16px;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
+      linear-gradient(-45deg, transparent 50%, var(--ink-2) 50%);
+    background-position:
+      calc(100% - 18px) 22px,
+      calc(100% - 13px) 22px;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 32px;
+  }
+  .row .conjunction {
+    display: grid;
+    place-items: center;
+    padding: 0 12px;
+    font-family: var(--jp);
+    font-size: 14px;
+    color: var(--ink-3);
+    border-right: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .row button {
+    flex: 0 0 auto;
+    appearance: none;
+    border: 0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0 22px;
+    cursor: pointer;
+    transition: background .12s;
+    min-width: 88px;
+  }
+  .row button:hover { background: var(--indigo); }
+  .row button:active { background: var(--vermillion); }
 
-    .toggle button.active {
-      background: white;
-      color: #2c2c2c;
-      font-weight: 600;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    }
+  /* row variant: two stacked inputs for fractional */
+  .row.split { flex-wrap: nowrap; }
+  .row.split > .field { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; border-right: 1px solid var(--rule); }
+  .row.split > .field:last-of-type { border-right: 0; }
+  .row.split .field-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 8px 14px 0;
+  }
+  .row.split .field input,
+  .row.split .field select {
+    border-right: 0;
+    padding-top: 4px;
+    padding-bottom: 14px;
+    font-size: 22px;
+  }
 
-    .view {
-      display: none;
-    }
+  /* ---------- Result ---------- */
+  .result {
+    margin-top: 14px;
+    padding: 22px 18px 20px;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .result-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    flex: 0 0 auto;
+  }
+  .result-value {
+    font-family: var(--serif);
+    font-size: 38px;
+    line-height: 1;
+    color: var(--vermillion);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-align: right;
+    word-break: break-word;
+  }
+  .result-value .unit {
+    font-family: var(--jp);
+    font-size: 18px;
+    color: var(--ink-2);
+    margin-left: 6px;
+    font-weight: 500;
+  }
+  .result.empty .result-value { color: var(--ink-3); font-style: italic; font-size: 22px; }
+  .result.empty .result-value .unit { display: none; }
 
-    .view.visible {
-      display: block;
-    }
+  .result-sub {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    text-align: right;
+  }
+  .result-sub .err-larger  { color: var(--vermillion); }
+  .result-sub .err-smaller { color: var(--indigo); }
+  .result-sub .err-exact   { color: var(--ink-2); }
 
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    }
+  /* ---------- Precision selector (Fractional mode) ---------- */
+  .precision {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .precision-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .precision .seg button { min-width: 56px; }
 
-    .card h2 {
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #888;
-      margin-bottom: 16px;
-    }
+  /* ---------- Table view ---------- */
+  .table-view { margin-top: 22px; }
+  .table-controls {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--rule);
+  }
+  .seg button {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--rule);
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button.active { background: var(--ink); color: var(--paper); }
 
-    .input-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  table thead th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--rule);
+    font-weight: 500;
+  }
+  table thead th:last-child, table tbody td:last-child { text-align: right; }
+  table tbody td {
+    font-family: var(--serif);
+    font-size: 18px;
+    padding: 11px 10px;
+    border-bottom: 1px dotted rgba(42,37,32,0.22);
+    color: var(--ink);
+  }
+  table tbody td.bu { color: var(--ink); font-weight: 500; }
+  table tbody td.ins { color: var(--ink-2); }
+  table tbody tr:hover { background: rgba(255,255,255,0.45); }
+  table tbody tr.close td { font-weight: 600; color: var(--ink); background: rgba(184,65,46,0.06); }
+  table tbody tr.close td.ins { color: var(--vermillion); }
+  table tbody td.err {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+  table tbody tr.close td.err { color: var(--vermillion); font-weight: 500; }
+  table tbody td.err .dir {
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-left: 4px;
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+  table tbody tr.half td.bu { font-style: italic; }
+  table tbody td .ann {
+    font-family: var(--jp);
+    color: var(--ink-3);
+    font-size: 12px;
+    margin-left: 6px;
+  }
 
-    input {
-      flex: 1;
-      padding: 12px 16px;
-      border: 1.5px solid #ddd;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
+  /* ---------- Footer ---------- */
+  footer {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  footer .ref {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  footer .ref b { color: var(--ink-2); font-weight: 500; }
 
-    input:focus {
-      border-color: #5c4a2a;
-    }
+  .view { display: none; }
+  .view.active { display: block; }
 
-    button {
-      background: #5c4a2a;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 1rem;
-      cursor: pointer;
-      white-space: nowrap;
-    }
+  /* tighten on small phones */
+  @media (max-width: 380px) {
+    h1 { font-size: 30px; }
+    .row input, .row select { font-size: 22px; padding: 16px 12px; }
+    .result-value { font-size: 30px; }
+    .row button { min-width: 76px; padding: 0 14px; }
+  }
 
-    button:active {
-      opacity: 0.8;
-    }
-
-    .result {
-      background: #f5f0e8;
-      border-radius: 10px;
-      padding: 16px;
-      display: none;
-    }
-
-    .result.visible {
-      display: block;
-    }
-
-    .result-main {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .result-error {
-      font-size: 0.9rem;
-      color: #888;
-    }
-
-    .fraction-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    select {
-      flex: 1;
-      padding: 12px 16px;
-      border: 1.5px solid #ddd;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      background: white;
-      outline: none;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
-
-    thead th {
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 2px solid #e0d8cc;
-      color: #888;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    tbody td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #f0ece4;
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    tbody tr:hover {
-      background: #faf7f2;
-    }
-
-    tr.highlight {
-      font-weight: 700;
-      background: #fef9ec;
-    }
-
-    tr.highlight:hover {
-      background: #fdf3d4;
-    }
-
-    .highlight-note {
-      font-size: 0.8rem;
-      color: #a07840;
-      margin-top: 14px;
-    }
-  </style>
+  /* keep buttons readable on very narrow widths */
+  @media (max-width: 340px) {
+    .modes { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
+  <div class="wrap" id="app"></div>
 
-  <h1>Bu Converter</h1>
-  <p class="subtitle">Japanese bu ↔ Imperial inches</p>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-  <div class="toggle">
-    <button class="active" onclick="showView('calculator', this)">Calculator - Fractional Inches</button>
-    <button onclick="showView('decimal', this)">Calculator - Decimal Inches</button>
-    <button onclick="showView('table', this)">Table</button>
-  </div>
+  <script type="text/babel">
+    const { useState, useMemo } = React;
 
-  <!-- CALCULATOR VIEW (FRACTIONAL) -->
-  <div class="view visible" id="view-calculator">
+    // 1 bu = 1/10 sun = 1/100 shaku.  Standard kanejaku shaku = 30.30303 cm = ~11.93 in.
+    // So 1 bu = 0.11930 in (approx).  Using the more precise 1 shaku = 10/33 m.
+    // 1 bu = 1/100 shaku = (10/33)/100 m = 1/330 m = 100/330 cm = 0.303030... cm = 0.119303... in
+    const BU_PER_INCH = 2.54 / 0.30303030303;  // cm-per-in / cm-per-bu  ≈ 8.382
+    const IN_PER_BU = 1 / BU_PER_INCH;         // ≈ 0.119303
 
-    <div class="card">
-      <h2>Bu → Inches</h2>
-      <div class="input-row">
-        <input type="number" id="buInput" placeholder="Enter bu" min="0" step="any" />
-        <button onclick="convertBuToInches()">Convert</button>
-      </div>
-      <div class="result" id="buResult">
-        <div class="result-main" id="buResultMain"></div>
-        <div class="result-error" id="buResultError"></div>
-      </div>
-    </div>
+    // ------- helpers -------
+    const fmt = (n, d = 4) => {
+      if (!isFinite(n)) return "—";
+      const r = Number(n.toFixed(d));
+      return r.toString();
+    };
 
-    <div class="card">
-      <h2>Inches → Bu</h2>
-      <div class="input-row fraction-row">
-        <input type="number" id="inchWhole" placeholder="Whole inches" min="0" step="1" />
-        <span>and</span>
-        <select id="inchFraction">
-          <option value="0">0"</option>
-          <option value="1">1/16"</option>
-          <option value="2">1/8"</option>
-          <option value="3">3/16"</option>
-          <option value="4">1/4"</option>
-          <option value="5">5/16"</option>
-          <option value="6">3/8"</option>
-          <option value="7">7/16"</option>
-          <option value="8">1/2"</option>
-          <option value="9">9/16"</option>
-          <option value="10">5/8"</option>
-          <option value="11">11/16"</option>
-          <option value="12">3/4"</option>
-          <option value="13">13/16"</option>
-          <option value="14">7/8"</option>
-          <option value="15">15/16"</option>
-        </select>
-        <button onclick="convertInchesToBu()">Convert</button>
-      </div>
-      <div class="result" id="inchResult">
-        <div class="result-main" id="inchResultMain"></div>
-        <div class="result-error" id="inchResultError"></div>
-      </div>
-    </div>
+    // Reduce a fraction
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
 
-  </div>
+    // Convert decimal inches → whole + nearest fractional inch (to chosen denom)
+    const toFractional = (decimalInches, denom = 32) => {
+      const sign = decimalInches < 0 ? -1 : 1;
+      const v = Math.abs(decimalInches);
+      const whole = Math.floor(v);
+      const frac = v - whole;
+      let num = Math.round(frac * denom);
+      let den = denom;
+      if (num === den) { return { whole: sign * (whole + 1), num: 0, den: 1 }; }
+      if (num === 0)   { return { whole: sign * whole, num: 0, den: 1 }; }
+      const g = gcd(num, den);
+      return { whole: sign * whole, num: num / g, den: den / g };
+    };
 
-  <!-- CALCULATOR VIEW (DECIMAL) -->
-  <div class="view" id="view-decimal">
+    const fmtFractional = (decimalInches, denom = 32) => {
+      const { whole, num, den } = toFractional(decimalInches, denom);
+      if (num === 0) return `${whole}″`;
+      if (whole === 0) return `${num}/${den}″`;
+      return `${whole} ${num}/${den}″`;
+    };
 
-    <div class="card">
-      <h2>Bu → Inches</h2>
-      <div class="input-row">
-        <input type="number" id="buInputDec" placeholder="Enter bu" min="0" step="any" />
-        <button onclick="convertBuToInchesDecimal()">Convert</button>
-      </div>
-      <div class="result" id="buResultDec">
-        <div class="result-main" id="buResultMainDec"></div>
-      </div>
-    </div>
+    // For a target decimal-inch value and denominator, compute the snapped
+    // fractional value and the signed error (snapped - target).
+    // Positive error => snapped is LARGER than the true value.
+    // Negative error => snapped is SMALLER than the true value.
+    const fractionalSnap = (decimalInches, denom) => {
+      const snapped = Math.round(decimalInches * denom) / denom;
+      const error = snapped - decimalInches;  // signed
+      return { snapped, error };
+    };
 
-    <div class="card">
-      <h2>Inches → Bu</h2>
-      <div class="input-row">
-        <input type="number" id="inchInputDec" placeholder="Enter inches" min="0" step="any" />
-        <button onclick="convertInchesToBuDecimal()">Convert</button>
-      </div>
-      <div class="result" id="inchResultDec">
-        <div class="result-main" id="inchResultMainDec"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- TABLE VIEW -->
-  <div class="view" id="view-table">
-    <div class="card">
-      <h2>Reference Table (1–30 bu)</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Bu</th>
-            <th>Nearest inch</th>
-            <th>Error (")</th>
-          </tr>
-        </thead>
-        <tbody id="referenceTableBody"></tbody>
-      </table>
-      <p class="highlight-note">★ Near-perfect match to 1/8" increment (error &lt; 0.006")</p>
-    </div>
-  </div>
-
-  <script>
-    const BU_IN_INCHES = 0.11930;
-    const BU_PER_INCH = 1 / BU_IN_INCHES;
-
-    function showView(viewName, btn) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('visible'));
-      document.querySelectorAll('.toggle button').forEach(b => b.classList.remove('active'));
-      document.getElementById('view-' + viewName).classList.add('visible');
-      btn.classList.add('active');
-    }
-
-    function gcd(a, b) {
-      return b === 0 ? a : gcd(b, a % b);
-    }
-
-    function simplifyFraction(numerator, denominator) {
-      if (numerator === 0) return null;
-      const divisor = gcd(numerator, denominator);
-      return { num: numerator / divisor, den: denominator / divisor };
-    }
-
-    function formatInches(decimalInches) {
-      const whole = Math.floor(decimalInches);
-      const remainder16 = Math.round((decimalInches - whole) * 16);
-
-      let fractionStr = '';
-      if (remainder16 !== 0) {
-        const simplified = simplifyFraction(remainder16, 16);
-        fractionStr = `${simplified.num}/${simplified.den}"`;
+    // Format an error magnitude in hundredths-of-an-inch with direction word.
+    // We round to 2 dp; if it rounds to 0.00 we say "exact".
+    const fmtError = (signedError) => {
+      const rounded = Math.round(signedError * 100) / 100;  // hundredths
+      const mag = Math.abs(rounded).toFixed(2);
+      if (rounded === 0) {
+        return { text: "exact", dir: "exact", mag: "0.00" };
       }
+      return {
+        text: `${mag}″ ${rounded > 0 ? "larger" : "smaller"}`,
+        dir: rounded > 0 ? "larger" : "smaller",
+        mag,
+      };
+    };
 
-      if (whole > 0 && fractionStr) return `${whole} and ${fractionStr}`;
-      if (whole > 0) return `${whole}"`;
-      return fractionStr || '0"';
+    // ===== Header =====
+    function Header() {
+      return (
+        <header>
+          <div className="title-block">
+            <div className="eyebrow">Workshop · 木工</div>
+            <h1>Bu Converter<span className="jp">分</span></h1>
+            <div className="subtitle">Japanese Bu ⇋ Imperial Inches</div>
+          </div>
+          <div className="stamp" title="hanko">分</div>
+        </header>
+      );
     }
 
-    function nearestSixteenth(decimalInches) {
-      return Math.round(decimalInches * 16) / 16;
+    // ===== Mode switcher =====
+    function ModeSwitch({ mode, setMode }) {
+      const modes = [
+        { id: "frac",    en: "Fractional",  jp: "分数" },
+        { id: "decimal", en: "Decimal",     jp: "小数" },
+        { id: "table",   en: "Table",       jp: "一覧" },
+      ];
+      return (
+        <div className="modes" role="tablist" aria-label="View mode">
+          {modes.map(m => (
+            <button
+              key={m.id}
+              className={"mode " + (mode === m.id ? "active" : "")}
+              onClick={() => setMode(m.id)}
+              role="tab"
+              aria-selected={mode === m.id}
+            >
+              <span>{m.en}</span>
+              <span className="jp">{m.jp}</span>
+            </button>
+          ))}
+        </div>
+      );
     }
 
-    function isEighthInch(decimalInches) {
-      const remainder16 = Math.round((decimalInches - Math.floor(decimalInches)) * 16);
-      return remainder16 % 2 === 0;
+    // ===== Bu → Inches (decimal) =====
+    function BuToInchesDecimal() {
+      const [bu, setBu] = useState("");
+      const [out, setOut] = useState(null);
+      const submit = (e) => {
+        e?.preventDefault?.();
+        const v = parseFloat(bu);
+        if (!isFinite(v)) { setOut(null); return; }
+        setOut(v * IN_PER_BU);
+      };
+      return (
+        <section className="panel">
+          <div className="panel-head">
+            <div className="panel-label">Bu <span className="arrow">→</span> Inches</div>
+            <div className="panel-meta">分 から インチ</div>
+          </div>
+          <form className="row" onSubmit={submit}>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Enter bu"
+              value={bu}
+              onChange={e => setBu(e.target.value)}
+            />
+            <button type="submit">Convert</button>
+          </form>
+          <div className={"result " + (out === null ? "empty" : "")}>
+            <div className="result-label">Result</div>
+            <div className="result-value">
+              {out === null ? "awaiting input" : <>
+                {out.toFixed(2)}<span className="unit">in</span>
+              </>}
+            </div>
+          </div>
+          {out !== null && (
+            <div className="result-sub">≈ {fmtFractional(out, 32)} · to nearest 1/32″</div>
+          )}
+        </section>
+      );
     }
 
-    function convertBuToInches() {
-      const bu = parseFloat(document.getElementById('buInput').value);
-      if (isNaN(bu) || bu < 0) return;
-
-      const exactInches = bu * BU_IN_INCHES;
-      const nearest16 = nearestSixteenth(exactInches);
-      const errorInches = Math.abs(exactInches - nearest16);
-      const errorBu = errorInches * BU_PER_INCH;
-
-      document.getElementById('buResultMain').textContent = formatInches(nearest16);
-      document.getElementById('buResultError').textContent =
-        `Margin of error: ${errorInches.toFixed(4)}" (${errorBu.toFixed(2)} bu)`;
-      document.getElementById('buResult').classList.add('visible');
+    // ===== Bu → Inches (fractional, with chosen precision + error) =====
+    function BuToInchesFractional({ denom }) {
+      const [bu, setBu] = useState("");
+      const [out, setOut] = useState(null);  // raw decimal inches
+      const submit = (e) => {
+        e?.preventDefault?.();
+        const v = parseFloat(bu);
+        if (!isFinite(v)) { setOut(null); return; }
+        setOut(v * IN_PER_BU);
+      };
+      const snap = out === null ? null : fractionalSnap(out, denom);
+      const errInfo = snap === null ? null : fmtError(snap.error);
+      return (
+        <section className="panel">
+          <div className="panel-head">
+            <div className="panel-label">Bu <span className="arrow">→</span> Inches</div>
+            <div className="panel-meta">分 から インチ</div>
+          </div>
+          <form className="row" onSubmit={submit}>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Enter bu"
+              value={bu}
+              onChange={e => setBu(e.target.value)}
+            />
+            <button type="submit">Convert</button>
+          </form>
+          <div className={"result " + (out === null ? "empty" : "")}>
+            <div className="result-label">Nearest 1/{denom}″</div>
+            <div className="result-value">
+              {out === null ? "awaiting input" : <>
+                {fmtFractional(snap.snapped, denom)}
+              </>}
+            </div>
+          </div>
+          {out !== null && (
+            <div className="result-sub">
+              true value {out.toFixed(2)}″ · snapped is{" "}
+              <span className={"err-" + errInfo.dir}>
+                {errInfo.dir === "exact" ? "exact" : `${errInfo.mag}″ ${errInfo.dir}`}
+              </span>
+            </div>
+          )}
+        </section>
+      );
     }
 
-    function convertInchesToBu() {
-      const whole = parseFloat(document.getElementById('inchWhole').value) || 0;
-      const fraction = parseInt(document.getElementById('inchFraction').value);
-
-      const totalInches = whole + (fraction / 16);
-      if (totalInches <= 0) return;
-
-      const exactBu = totalInches * BU_PER_INCH;
-      const roundedBu = Math.round(exactBu * 10) / 10;
-      const errorBu = Math.abs(exactBu - roundedBu);
-      const errorInches = errorBu * BU_IN_INCHES;
-
-      document.getElementById('inchResultMain').textContent = `${exactBu.toFixed(2)} bu`;
-      document.getElementById('inchResultError').textContent =
-        `Margin of error: ${errorBu.toFixed(4)} bu (${errorInches.toFixed(4)}")`;
-      document.getElementById('inchResult').classList.add('visible');
+    // ===== Inches (decimal) → Bu =====
+    function InchesDecimalToBu() {
+      const [inches, setInches] = useState("");
+      const [out, setOut] = useState(null);
+      const submit = (e) => {
+        e?.preventDefault?.();
+        const v = parseFloat(inches);
+        if (!isFinite(v)) { setOut(null); return; }
+        setOut(v * BU_PER_INCH);
+      };
+      return (
+        <section className="panel">
+          <div className="panel-head">
+            <div className="panel-label">Inches <span className="arrow">→</span> Bu</div>
+            <div className="panel-meta">インチ から 分</div>
+          </div>
+          <form className="row" onSubmit={submit}>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Enter inches"
+              value={inches}
+              onChange={e => setInches(e.target.value)}
+            />
+            <button type="submit">Convert</button>
+          </form>
+          <div className={"result " + (out === null ? "empty" : "")}>
+            <div className="result-label">Result</div>
+            <div className="result-value">
+              {out === null ? "awaiting input" : <>
+                {out.toFixed(2)}<span className="unit">分</span>
+              </>}
+            </div>
+          </div>
+          {out !== null && (
+            <div className="result-sub">{(out / 10).toFixed(2)} sun · {(out / 100).toFixed(2)} shaku</div>
+          )}
+        </section>
+      );
     }
 
-    function convertBuToInchesDecimal() {
-      const bu = parseFloat(document.getElementById('buInputDec').value);
-      if (isNaN(bu) || bu < 0) return;
-
-      const exactInches = bu * BU_IN_INCHES;
-      document.getElementById('buResultMainDec').textContent = `${exactInches.toFixed(3)}"`;
-      document.getElementById('buResultDec').classList.add('visible');
+    // ===== Inches (fractional) → Bu =====
+    function InchesFractionalToBu() {
+      const [whole, setWhole] = useState("");
+      const [frac, setFrac] = useState("0");
+      const [out, setOut] = useState(null);
+      const fractions = [
+        ["0", "0"], ["1/32", "1/32"], ["1/16", "1/16"], ["3/32", "3/32"],
+        ["1/8", "1/8"], ["5/32", "5/32"], ["3/16", "3/16"], ["7/32", "7/32"],
+        ["1/4", "1/4"], ["9/32", "9/32"], ["5/16", "5/16"], ["11/32", "11/32"],
+        ["3/8", "3/8"], ["13/32", "13/32"], ["7/16", "7/16"], ["15/32", "15/32"],
+        ["1/2", "1/2"], ["17/32", "17/32"], ["9/16", "9/16"], ["19/32", "19/32"],
+        ["5/8", "5/8"], ["21/32", "21/32"], ["11/16", "11/16"], ["23/32", "23/32"],
+        ["3/4", "3/4"], ["25/32", "25/32"], ["13/16", "13/16"], ["27/32", "27/32"],
+        ["7/8", "7/8"], ["29/32", "29/32"], ["15/16", "15/16"], ["31/32", "31/32"],
+      ];
+      const parseFrac = (s) => {
+        if (!s || s === "0") return 0;
+        const [n, d] = s.split("/").map(Number);
+        return n / d;
+      };
+      const submit = (e) => {
+        e?.preventDefault?.();
+        const w = parseFloat(whole);
+        const f = parseFrac(frac);
+        if (!isFinite(w) && !isFinite(f)) { setOut(null); return; }
+        const total = (isFinite(w) ? w : 0) + (isFinite(f) ? f : 0);
+        setOut(total * BU_PER_INCH);
+      };
+      return (
+        <section className="panel">
+          <div className="panel-head">
+            <div className="panel-label">Inches <span className="arrow">→</span> Bu</div>
+            <div className="panel-meta">インチ から 分</div>
+          </div>
+          <form className="row split" onSubmit={submit}>
+            <div className="field">
+              <div className="field-label">Whole</div>
+              <input
+                type="number"
+                inputMode="numeric"
+                step="1"
+                placeholder="0"
+                value={whole}
+                onChange={e => setWhole(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <div className="field-label">Fraction</div>
+              <select value={frac} onChange={e => setFrac(e.target.value)}>
+                {fractions.map(([v, l]) => <option key={v} value={v}>{l}″</option>)}
+              </select>
+            </div>
+            <button type="submit">Convert</button>
+          </form>
+          <div className={"result " + (out === null ? "empty" : "")}>
+            <div className="result-label">Result</div>
+            <div className="result-value">
+              {out === null ? "awaiting input" : <>
+                {out.toFixed(2)}<span className="unit">分</span>
+              </>}
+            </div>
+          </div>
+          {out !== null && (
+            <div className="result-sub">{(out / 10).toFixed(2)} sun · {(out / 100).toFixed(2)} shaku</div>
+          )}
+        </section>
+      );
     }
 
-    function convertInchesToBuDecimal() {
-      const inches = parseFloat(document.getElementById('inchInputDec').value);
-      if (isNaN(inches) || inches <= 0) return;
+    // ===== Table view =====
+    function TableView({ denom }) {
+      const [dir, setDir] = useState("bu2in");      // bu2in | in2bu
+      const [step, setStep] = useState(1);
 
-      const exactBu = inches * BU_PER_INCH;
-      document.getElementById('inchResultMainDec').textContent = `${exactBu.toFixed(3)} bu`;
-      document.getElementById('inchResultDec').classList.add('visible');
-    }
+      const rows = useMemo(() => {
+        const out = [];
+        if (dir === "bu2in") {
+          // Build the integer-bu rows; if step is 1, also splice in any
+          // half-bu values that snap especially well (within 0.02").
+          const half_threshold = 0.02;
+          const close_threshold = 0.01;
 
-    function buildTable() {
-      const tbody = document.getElementById('referenceTableBody');
-      const rows = [];
+          for (let i = 1; i <= 30; i += 1) {
+            const bu = i * step;
+            const inches = bu * IN_PER_BU;
+            const { snapped, error } = fractionalSnap(inches, denom);
+            const errAbs = Math.abs(error);
+            // close iff rounded-to-hundredths magnitude <= 0.01
+            const errRounded = Math.abs(Math.round(error * 100) / 100);
+            const isClose = errRounded <= close_threshold + 1e-9;
+            out.push({
+              key: `${bu}`,
+              aLabel: `${bu} 分`,
+              isHalf: false,
+              isClose,
+              inches, snapped, error,
+            });
 
-      for (let bu = 1; bu <= 30; bu++) {
-        rows.push(bu);
-        const halfBu = bu - 0.5;
-        const exactInches = halfBu * BU_IN_INCHES;
-        const nearest16 = nearestSixteenth(exactInches);
-        const errorInches = Math.abs(exactInches - nearest16);
-        if (errorInches < 0.006 && isEighthInch(nearest16)) {
-          rows.push(halfBu);
+            // half-bu candidate between this row and the next, only on step=1
+            if (step === 1 && i < 30) {
+              const halfBu = bu + 0.5;
+              const halfInches = halfBu * IN_PER_BU;
+              const halfSnap = fractionalSnap(halfInches, denom);
+              const halfRounded = Math.abs(Math.round(halfSnap.error * 100) / 100);
+              if (halfRounded <= half_threshold + 1e-9) {
+                out.push({
+                  key: `h${halfBu}`,
+                  aLabel: `${halfBu} 分`,
+                  isHalf: true,
+                  isClose: halfRounded <= close_threshold + 1e-9,
+                  inches: halfInches,
+                  snapped: halfSnap.snapped,
+                  error: halfSnap.error,
+                });
+              }
+            }
+          }
+        } else {
+          const inc = step;
+          for (let i = 1; i <= 30; i += 1) {
+            const inches = i * inc;
+            const bu = inches * BU_PER_INCH;
+            out.push({
+              key: `i${i}`,
+              aLabel: fmtFractional(inches, 32),
+              isHalf: false,
+              isClose: false,
+              inches, bu,
+            });
+          }
         }
-      }
+        return out;
+      }, [dir, step, denom]);
 
-      rows.sort((a, b) => a - b);
+      return (
+        <section className="panel">
+          <div className="panel-head">
+            <div className="panel-label">Reference Table</div>
+            <div className="panel-meta">換算表</div>
+          </div>
 
-      rows.forEach(bu => {
-        const exactInches = bu * BU_IN_INCHES;
-        const nearest16 = nearestSixteenth(exactInches);
-        const errorInches = Math.abs(exactInches - nearest16);
-        const isNearPerfect = errorInches < 0.006 && isEighthInch(nearest16);
+          <div className="table-controls" style={{ marginTop: 16 }}>
+            <div className="seg" role="tablist" aria-label="Direction">
+              <button
+                className={dir === "bu2in" ? "active" : ""}
+                onClick={() => { setDir("bu2in"); setStep(1); }}
+              >Bu → In</button>
+              <button
+                className={dir === "in2bu" ? "active" : ""}
+                onClick={() => { setDir("in2bu"); setStep(1/8); }}
+              >In → Bu</button>
+            </div>
+            <div className="seg" role="tablist" aria-label="Step">
+              {dir === "bu2in" ? (
+                <>
+                  <button className={step === 1 ? "active" : ""} onClick={() => setStep(1)}>×1</button>
+                  <button className={step === 5 ? "active" : ""} onClick={() => setStep(5)}>×5</button>
+                  <button className={step === 10 ? "active" : ""} onClick={() => setStep(10)}>×10</button>
+                </>
+              ) : (
+                <>
+                  <button className={step === 1/16 ? "active" : ""} onClick={() => setStep(1/16)}>1/16</button>
+                  <button className={step === 1/8  ? "active" : ""} onClick={() => setStep(1/8)}>1/8</button>
+                  <button className={step === 1/4  ? "active" : ""} onClick={() => setStep(1/4)}>1/4</button>
+                  <button className={step === 1    ? "active" : ""} onClick={() => setStep(1)}>1″</button>
+                </>
+              )}
+            </div>
+          </div>
 
-        const tr = document.createElement('tr');
-        if (isNearPerfect) tr.classList.add('highlight');
-
-        tr.innerHTML = `
-          <td>${bu}${isNearPerfect ? ' ★' : ''}</td>
-          <td>${formatInches(nearest16)}</td>
-          <td>${errorInches.toFixed(2)}"</td>
-        `;
-        tbody.appendChild(tr);
-      });
+          {dir === "bu2in" ? (
+            <table>
+              <thead>
+                <tr>
+                  <th>Bu · 分</th>
+                  <th>Inches (1/{denom})</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const errInfo = fmtError(r.error);
+                  return (
+                    <tr key={r.key} className={(r.isClose ? "close " : "") + (r.isHalf ? "half" : "")}>
+                      <td className="bu">{r.aLabel}</td>
+                      <td className="ins">{fmtFractional(r.snapped, denom)}</td>
+                      <td className="err">
+                        {errInfo.dir === "exact" ? (
+                          <>exact</>
+                        ) : (
+                          <>
+                            {errInfo.mag}″<span className="dir">{errInfo.dir}</span>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Inches</th>
+                  <th>Bu · 分</th>
+                  <th>Sun · 寸</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.key}>
+                    <td className="bu">{r.aLabel}</td>
+                    <td className="ins">{r.bu.toFixed(2)}<span className="ann">分</span></td>
+                    <td className="ins">{(r.bu / 10).toFixed(2)}<span className="ann">寸</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      );
     }
 
-    buildTable();
-  </script>
+    // ===== Footer =====
+    function Footer() {
+      return (
+        <footer>
+          <div className="ref"><b>1 分</b> = 1/10 sun = <b>{IN_PER_BU.toFixed(5)}″</b></div>
+          <div className="ref"><b>1″</b> = <b>{BU_PER_INCH.toFixed(4)} 分</b></div>
+        </footer>
+      );
+    }
 
+    // ===== Precision selector =====
+    function PrecisionSwitch({ denom, setDenom }) {
+      const opts = [16, 32, 64];
+      return (
+        <div className="precision">
+          <div className="precision-label">Precision</div>
+          <div className="seg" role="tablist" aria-label="Precision">
+            {opts.map(d => (
+              <button
+                key={d}
+                className={denom === d ? "active" : ""}
+                onClick={() => setDenom(d)}
+              >1/{d}″</button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ===== App =====
+    function App() {
+      const [mode, setMode] = useState("frac");
+      const [denom, setDenom] = useState(32);
+      return (
+        <>
+          <Header />
+          <ModeSwitch mode={mode} setMode={setMode} />
+
+          {(mode === "frac" || mode === "table") && (
+            <PrecisionSwitch denom={denom} setDenom={setDenom} />
+          )}
+
+          <div className={"view " + (mode === "frac" ? "active" : "")}>
+            <BuToInchesFractional denom={denom} />
+            <InchesFractionalToBu />
+          </div>
+
+          <div className={"view " + (mode === "decimal" ? "active" : "")}>
+            <BuToInchesDecimal />
+            <InchesDecimalToBu />
+          </div>
+
+          <div className={"view " + (mode === "table" ? "active" : "")}>
+            <TableView denom={denom} />
+          </div>
+
+          <Footer />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+  </script>
 </body>
 </html>
